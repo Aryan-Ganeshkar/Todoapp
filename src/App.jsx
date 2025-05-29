@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import TodoInput from './components/TodoInput';
 import TaskItem from './components/TaskItem';
@@ -11,30 +10,35 @@ const App = () => {
   const [filter, setFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
-  // Load tasks from localStorage on mount
+  // On load
   useEffect(() => {
-    const storedTasks = localStorage.getItem('tasks');
-    if (storedTasks) {
-      setTasks(JSON.parse(storedTasks));
-    } else {
-      const sampleTasks = [
-        { id: 1, text: 'Learn React hooks', completed: false },
-        { id: 2, text: 'Build a todo app', completed: true },
-        { id: 3, text: 'Master Tailwind CSS', completed: false }
-      ];
-      setTasks(sampleTasks);
+    const savedTasks = localStorage.getItem('tasks');
+    if (savedTasks) setTasks(JSON.parse(savedTasks));
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
     }
   }, []);
 
-  // Save tasks to localStorage whenever tasks change
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
 
+  useEffect(() => {
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
   const addTask = (text) => {
-    const newTask = { id: Date.now(), text, completed: false };
-    setTasks(prev => [...prev, newTask]);
+    setTasks(prev => [...prev, { id: Date.now(), text, completed: false }]);
   };
 
   const deleteTask = (id) => {
@@ -55,7 +59,7 @@ const App = () => {
   };
 
   const saveEdit = (id) => {
-    if (editValue.trim() === '') return;
+    if (!editValue.trim()) return;
     setTasks(prev =>
       prev.map(task =>
         task.id === id ? { ...task, text: editValue.trim() } : task
@@ -80,31 +84,35 @@ const App = () => {
   const pendingCount = tasks.length - completedCount;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-500 px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">React Todo App</h1>
-          <p className="text-gray-600">Demonstrating React Frontend Basics with Functional Components</p>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">React Todo App</h1>
+          <button
+            onClick={() => setDarkMode(prev => !prev)}
+            className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+          >
+            {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+          </button>
         </div>
 
         <TodoInput inputValue={inputValue} setInputValue={setInputValue} onAddTask={addTask} />
 
-        <FilterButtons filter={filter} setFilter={setFilter} counts={{ total: tasks.length, pending: pendingCount, completed: completedCount }} />
+        <FilterButtons
+          filter={filter}
+          setFilter={setFilter}
+          counts={{ total: tasks.length, pending: pendingCount, completed: completedCount }}
+        />
 
         <TaskStats total={tasks.length} pending={pendingCount} completed={completedCount} />
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            {filter} Tasks {filter !== 'All' && `(${filteredTasks.length})`}
+        <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow transition">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
+            {filter} Tasks ({filteredTasks.length})
           </h2>
 
           {filteredTasks.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">📝</div>
-              <p className="text-gray-500 text-lg">
-                {filter === 'All' ? 'No tasks yet. Add one above!' : `No ${filter.toLowerCase()} tasks.`}
-              </p>
-            </div>
+            <p className="text-center text-gray-500 dark:text-gray-300 py-4">No tasks available.</p>
           ) : (
             <div className="space-y-4">
               {filteredTasks.map(task => (
