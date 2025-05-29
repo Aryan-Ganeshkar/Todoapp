@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from "react";
 
 const StatCard = ({ count, label, color }) => (
   <div className="bg-white p-6 rounded-xl shadow-lg text-center">

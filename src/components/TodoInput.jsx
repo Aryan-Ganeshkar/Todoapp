@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef } from "react";
 
 const TodoInput = ({ inputValue, setInputValue, onAddTask }) => {
   const inputRef = useRef(null);
@@ -7,7 +7,7 @@ const TodoInput = ({ inputValue, setInputValue, onAddTask }) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
     onAddTask(inputValue.trim());
-    setInputValue('');
+    setInputValue("");
     inputRef.current?.focus();
   };
 
